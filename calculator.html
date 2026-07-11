@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>حاسبة القرار · أنا مش عارفني</title>
+<meta name="description" content="حاسبة الإيجابيات والسلبيات بمؤشر هاوكنز — قيّم قراراتك بشاشة ديجيتال وتحليل شخصي.">
+<link rel="canonical" href="./calculator.html">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head><body>
+<header class="site"><div class="nav">
+<a class="brand" href="index.html"><span class="dot"></span> أنا مش عارفني</a>
+<nav><ul>
+<li><a href="index.html">الرئيسية</a></li><li><a href="articles.html">مقالات</a></li>
+<li><a href="products.html">المنتجات</a></li>
+<li><a class="active" href="calculator.html">حاسبة القرار</a></li>
+<li><a href="contact.html">تواصل</a></li>
+</ul></nav></div></header>
+
+<main><section><div class="container">
+<h1 class="gradient-text" style="text-align:center">حاسبة الإيجابيات والسلبيات</h1>
+<p class="section-sub">قيّم قرارك بمقياس ديفيد هاوكنز للوعي (20-700)</p>
+
+<div class="calc-wrap">
+<input type="text" id="decision" placeholder="اكتب قرارك أو الموقف اللي بتفكر فيه...">
+
+<div class="pro-con">
+  <div class="col">
+    <h4 style="color:#2d8a4e">✅ الإيجابيات</h4>
+    <div class="row-input"><input type="text" id="proText" placeholder="إيجابية..."><input type="number" id="proWeight" placeholder="1-10" min="1" max="10" value="5"></div>
+    <button class="add" onclick="addItem('pro')">أضف</button>
+    <ul class="list" id="proList"></ul>
+  </div>
+  <div class="col">
+    <h4 style="color:#c33">❌ السلبيات</h4>
+    <div class="row-input"><input type="text" id="conText" placeholder="سلبية..."><input type="number" id="conWeight" placeholder="1-10" min="1" max="10" value="5"></div>
+    <button class="add" onclick="addItem('con')">أضف</button>
+    <ul class="list" id="conList"></ul>
+  </div>
+</div>
+
+<div class="digital" style="margin-top:24px">
+  <div class="val" id="hawkinsVal">---</div>
+  <div class="lbl" id="hawkinsLevel">لسه ما فيش تقييم</div>
+</div>
+
+<div class="card" style="margin-top:20px" id="insightBox" hidden>
+  <h3>التحليل الشخصي</h3>
+  <p id="insight" style="color:var(--muted)"></p>
+</div>
+</div>
+</div></section></main>
+
+<footer><div class="container"><div class="copy">© 2026 أنا مش عارفني</div></div></footer>
+
+<script>
+const pros=[], cons=[];
+const levels=[
+  [700,"التنوير — قرار من وعي مطلق ونور داخلي"],
+  [600,"السلام — انسجام كامل مع الحياة"],
+  [540,"الفرح — قرار نابع من قلب راضٍ"],
+  [500,"الحب — دافع صحي وعطاء"],
+  [400,"العقل — قرار مدروس ومنطقي"],
+  [350,"القبول — تصالح مع الظروف"],
+  [310,"الاستعداد — طاقة إيجابية للتنفيذ"],
+  [250,"الحياد — لا مع ولا ضد"],
+  [200,"الشجاعة — نقطة التحول للطاقة الإيجابية"],
+  [175,"الفخر — تحفظ لكن قابل للنقاش"],
+  [150,"الغضب — دافع سلبي، أعد النظر"],
+  [125,"الرغبة — قرار مدفوع بالحاجة الملحة"],
+  [100,"الخوف — قلق يقود القرار"],
+  [75,"الحزن — طاقة منخفضة"],
+  [50,"اللامبالاة — يأس، لا تتخذ القرار الآن"],
+  [30,"الذنب — لوم ذاتي مؤثر"],
+  [20,"العار — أدنى الطاقات، أعد التقييم لاحقاً"]
+];
+function addItem(type){
+  const t=document.getElementById(type+'Text').value.trim();
+  const w=parseInt(document.getElementById(type+'Weight').value)||5;
+  if(!t)return;
+  (type==='pro'?pros:cons).push({t,w});
+  document.getElementById(type+'Text').value='';
+  render();
+}
+function remove(type,i){(type==='pro'?pros:cons).splice(i,1);render();}
+function render(){
+  ['pro','con'].forEach(k=>{
+    const arr=k==='pro'?pros:cons;
+    document.getElementById(k+'List').innerHTML=arr.map((x,i)=>`<li><span>${x.t} <b>(${x.w})</b></span><button onclick="remove('${k}',${i})">✕</button></li>`).join('');
+  });
+  const P=pros.reduce((s,x)=>s+x.w,0);
+  const N=cons.reduce((s,x)=>s+x.w,0);
+  const total=P+N;
+  if(total===0){document.getElementById('hawkinsVal').textContent='---';document.getElementById('hawkinsLevel').textContent='لسه ما فيش تقييم';document.getElementById('insightBox').hidden=true;return;}
+  const ratio=P/total;
+  const score=Math.round(20+ratio*680);
+  const lvl=levels.find(l=>score>=l[0])||levels[levels.length-1];
+  document.getElementById('hawkinsVal').textContent=score;
+  document.getElementById('hawkinsLevel').textContent=lvl[1];
+  document.getElementById('insightBox').hidden=false;
+  let msg='';
+  if(score>=500)msg='قرارك نابع من طاقة عالية وحب. ثق في حدسك وامضِ.';
+  else if(score>=200)msg='طاقتك إيجابية والقرار مدروس. خد وقتك لكن لا تتأخر كتير.';
+  else if(score>=100)msg='في تردد أو خوف. اسأل نفسك: هل هذا القرار من خوف أم من رغبة حقيقية؟';
+  else msg='الطاقة منخفضة الآن. أرجئ القرار قليلاً، خذ قسطاً من الراحة، ثم أعد التقييم.';
+  document.getElementById('insight').textContent=msg;
+}
+</script>
+</body></html>
